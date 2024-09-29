@@ -9,8 +9,8 @@ COPY src ./src
 RUN mvn clean package -DskipTests -Pfilter-resources
 
 FROM eclipse-temurin:21-jre
-WORKDIR /
-COPY --from=build /app/target/devops-test.jar .
+WORKDIR /app
+COPY --from=build /app/target/*.jar devops-test.jar
 
 EXPOSE 8080
 
