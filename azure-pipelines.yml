@@ -1,0 +1,48 @@
+trigger:
+- feature/bmeza
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables: 
+  - group: DEVOPS_TEST_DEV
+
+jobs:
+- job: Build
+  displayName: 'Build and Push Docker Image'
+  steps:
+  
+  - task: Bash@3
+    inputs:
+      targetType: 'inline'
+      script: echo $DEVOPS_TEST_JWT_DEV
+    env:
+      API_LOGTAG_URI_DEV: $(DEVOPS_TEST_DEV_URI_DEV)
+      API_LOGTAG_JWT_DEV: $(DEVOPS_TEST_DEV_JWT_DEV)
+
+  - task: AzurePowerShell@5
+    inputs:
+      azureSubscription: DEVOPS_TEST_SERVICE_CONNECTION
+      ScriptType: InlineScript
+      azurePowerShellVersion: Latest
+      Inline: |
+        Set-Content -Path "src/main/resources/application.properties" -Value (Get-Content -Path "src/main/resources/application.properties" | ForEach-Object { $_ -replace '\$\{API_LOGTAG_URI_DEV\}', '$(API_LOGTAG_URI_DEV)' -replace '\$\{API_LOGTAG_JWT_DEV\}', '$(API_LOGTAG_JWT_DEV)' })
+        Get-Content -Path src/main/resources/application.properties -TotalCount 5
+
+  - task: Docker@2
+    inputs:
+      containerRegistry: 'mtc-api-docker-hub'
+      repository: 'ryandf1998/mtc-api-logtag-container'
+      command: 'buildAndPush'
+      Dockerfile: '**/Dockerfile'
+      tags: latest
+
+- job: Deploy
+  displayName: 'Deploy to Azure App Service'
+  dependsOn: Build
+  steps:
+    - task: AzureWebAppContainer@1
+      inputs:
+        azureSubscription: DEVOPS_TEST_SERVICE_CONNECTION
+        appName: proddevopstappserv
+        containers: ryandf1998/mtc-api-logtag-container:latest
