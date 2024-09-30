@@ -46,3 +46,4 @@ jobs:
         azureSubscription: DEVOPS_TEST_SERVICE_CONNECTION
         appName: proddevopstappserv
         containers: ryandf1998/mtc-api-logtag-container:latest
+        containerCommand: docker login -u ryandf1998 -p $(DEVOPS_TEST_DR_PASS_DEV)
