@@ -11,14 +11,6 @@ jobs:
 - job: Build
   displayName: 'Build and Push Docker Image'
   steps:
-  
-  - task: Bash@3
-    inputs:
-      targetType: 'inline'
-      script: echo $DEVOPS_TEST_JWT_DEV
-    env:
-      API_LOGTAG_URI_DEV: $(DEVOPS_TEST_DEV_URI_DEV)
-      API_LOGTAG_JWT_DEV: $(DEVOPS_TEST_DEV_JWT_DEV)
 
   - task: AzurePowerShell@5
     inputs:
@@ -26,7 +18,7 @@ jobs:
       ScriptType: InlineScript
       azurePowerShellVersion: Latest
       Inline: |
-        Set-Content -Path "src/main/resources/application.properties" -Value (Get-Content -Path "src/main/resources/application.properties" | ForEach-Object { $_ -replace '\$\{API_LOGTAG_URI_DEV\}', '$(API_LOGTAG_URI_DEV)' -replace '\$\{API_LOGTAG_JWT_DEV\}', '$(API_LOGTAG_JWT_DEV)' })
+        Set-Content -Path "src/main/resources/application.properties" -Value (Get-Content -Path "src/main/resources/application.properties" | ForEach-Object { $_ -replace '\$\{DEVOPS_TEST_DEV_URI_DEV\}', '$(DEVOPS_TEST_DEV_URI_DEV)' -replace '\$\{DEVOPS_TEST_DEV_JWT_DEV\}', '$(DEVOPS_TEST_DEV_JWT_DEV)' })
         Get-Content -Path src/main/resources/application.properties -TotalCount 5
 
   - task: Docker@2
