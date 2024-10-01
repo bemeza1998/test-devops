@@ -36,6 +36,7 @@ stages:
           testResultsFiles: '**/target/jacoco.exec'
           codeCoverageToolOption: 'JaCoCo'
           publishJUnitResults: true
+          mavenVersionOption: '3.8.5'
 
       # - task: Docker@2
       #   inputs:
