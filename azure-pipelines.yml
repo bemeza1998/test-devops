@@ -50,5 +50,5 @@ stages:
           - checkout: self
           - script: |
               echo "Hello from custom container"
-              mvn -v
+              df
 
