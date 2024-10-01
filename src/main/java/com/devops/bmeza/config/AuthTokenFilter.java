@@ -31,6 +31,9 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 
     @Value("${app.api.key}")
     private String API_KEY_HEADER;
+
+    @Value("${app.api.key.value}")
+    private String VALID_API_KEY;
     
     private static final Logger logger = LoggerFactory.getLogger(AuthTokenFilter.class);
 
@@ -41,7 +44,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 
             String apiKey = request.getHeader(API_KEY_HEADER);
 
-            if (apiKey == null) {
+            if (apiKey == null || !apiKey.equals(VALID_API_KEY)) {
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST, "ERROR");
                 return;
             }

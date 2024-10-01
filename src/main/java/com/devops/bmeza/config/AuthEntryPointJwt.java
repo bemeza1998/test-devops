@@ -26,7 +26,10 @@ public class AuthEntryPointJwt implements AuthenticationEntryPoint {
     private static final Logger logger = LoggerFactory.getLogger(AuthEntryPointJwt.class);
     
     @Value("${app.api.key}")
-    private String API_KEY_HEADER;
+    private  String API_KEY_HEADER;
+
+    @Value("${app.api.key.value}")
+    private  String VALID_API_KEY;
 
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response,
@@ -44,7 +47,13 @@ public class AuthEntryPointJwt implements AuthenticationEntryPoint {
                     "Bad request",
                     "Missing X-Parse-REST-API-Key header",
                     request.getServletPath());
-
+            return;
+        } else if (!apiKey.equals(VALID_API_KEY)){
+            this.buildBody(response,
+            HttpServletResponse.SC_BAD_REQUEST,
+            "Bad request",
+            "Bad X-Parse-REST-API-Key value",
+            request.getServletPath());
             return;
         }
 

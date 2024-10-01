@@ -5,11 +5,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -37,10 +37,13 @@ public class UserControllerTest {
     @Mock
     private JwtUtils jwtUtils;
 
+    @Value("${app.api.pass}")
+    private String PASSWORD;
+
     @Test
     public void authenticateUser_Success() throws Exception {
 
-        Login login = new Login("admin", "zq5Mpn9174uAFHgF");
+        Login login = new Login("admin", PASSWORD);
         Authentication authentication = new UsernamePasswordAuthenticationToken(login.getName(), login.getPassword());
         String jwt = "test_jwt";
 
@@ -48,27 +51,22 @@ public class UserControllerTest {
         when(jwtUtils.generateJwtToken(any())).thenReturn(jwt);
 
         ResponseEntity<JWT> response = userController.authenticateUser(login);
-        System.out.println(response);
 
         assertNotNull(response);
         assertNotNull(SecurityContextHolder.getContext().getAuthentication());
         assertEquals(true, response.getStatusCode().is2xxSuccessful());
         assertEquals(response.getBody().getClass(),JWT.class);
-        //mvc.perform(MockMvcRequestBuilders.post("/auth/signin").content(login).contentType(MediaType.APPLICATION_JSON).header("X-Parse-REST-API-Key", "2f5ae96c-b558-4c7b-a590-a501ae1c3f6")).andExpect(MockMvcResultMatchers.status().isOk());
     }
 
     @Test
     public void authenticateUser_InvalidCredentials() {
-        // Given
-        Login l = new Login("adminA", "wrongPassword");
-        //when(authenticationManager.authenticate(any())).thenThrow(BadCredentialsException.class);
 
-        // When
-        ResponseEntity<JWT> response = userController.authenticateUser(l);
+        Login login = new Login("adminA", "wrongPassword");
 
-        // Then
+        ResponseEntity<JWT> response = userController.authenticateUser(login);
+
         assertNotNull(response);
-        //assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
     }
 
 }
