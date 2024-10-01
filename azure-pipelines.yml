@@ -30,16 +30,12 @@ stages:
             Set-Content -Path "src/main/resources/application.properties" -Value (Get-Content -Path "src/main/resources/application.properties" | ForEach-Object { $_ -replace '\$\{DEVOPS_TEST_DEV_URI_DEV\}', '$(DEVOPS_TEST_DEV_URI_DEV)' -replace '\$\{DEVOPS_TEST_DEV_JWT_DEV\}', '$(DEVOPS_TEST_DEV_JWT_DEV)' })
             Get-Content -Path src/main/resources/application.properties -TotalCount 5
 
-      - task: Maven@3
+      - task: Docker@2
         inputs:
-          mavenPOMFile: 'pom.xml'
-          testResultsFiles: '**/target/jacoco.exec'
-          codeCoverageToolOption: 'JaCoCo'
-          mavenOptions: '-Xmx3072m'
-          jdkArchitectureOption: 'x64'
-          jdkVersionOption: '21.0.4'
-          mavenAuthenticateFeed: true
-          goals: 'package'
+          command: 'build'
+          Dockerfile: './docker-test/Dockerfile'
+          tags: latest
+          container: 'testcont'
 
       # - task: Docker@2
       #   inputs:
