@@ -29,13 +29,20 @@ jobs:
       Dockerfile: '**/Dockerfile'
       tags: latest
 
-- job: Deploy
-  displayName: 'Deploy to Azure App Service'
-  dependsOn: Build
-  steps:
-    - task: AzureWebAppContainer@1
-      inputs:
-        azureSubscription: DEVOPS_TEST_SERVICE_CONNECTION
-        appName: proddevopstappserv
-        containers: ryandf1998/mtc-api-logtag-container:latest
-        #containerCommand: docker login -u ryandf1998 -p $(DEVOPS_TEST_DR_PASS_DEV)
+  - task: Docker@2
+    inputs:
+      command: 'run'
+      containerName: 'ryandf1998/mtc-api-logtag-container:latest'
+      options: '--rm'  # Remover el contenedor después de que termine
+      arguments: 'mvn test' 
+
+# - job: Deploy
+#   displayName: 'Deploy to Azure App Service'
+#   dependsOn: Build
+#   steps:
+#     - task: AzureWebAppContainer@1
+#       inputs:
+#         azureSubscription: DEVOPS_TEST_SERVICE_CONNECTION
+#         appName: proddevopstappserv
+#         containers: ryandf1998/mtc-api-logtag-container:latest
+#         #containerCommand: docker login -u ryandf1998 -p $(DEVOPS_TEST_DR_PASS_DEV)
