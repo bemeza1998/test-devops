@@ -4,7 +4,7 @@ trigger:
 pool:
   vmImage: 'ubuntu-latest'
 
-variables: 
+variables:
   - group: DEVOPS_TEST_DEV
 
 # resources:
@@ -16,7 +16,7 @@ stages:
   - stage: Build
     displayName: Build stage
     jobs:
-  
+
     - job: Build
       displayName: 'Build and Push Docker Image'
       steps:
@@ -30,18 +30,25 @@ stages:
             Set-Content -Path "src/main/resources/application.properties" -Value (Get-Content -Path "src/main/resources/application.properties" | ForEach-Object { $_ -replace '\$\{DEVOPS_TEST_DEV_URI_DEV\}', '$(DEVOPS_TEST_DEV_URI_DEV)' -replace '\$\{DEVOPS_TEST_DEV_JWT_DEV\}', '$(DEVOPS_TEST_DEV_JWT_DEV)' })
             Get-Content -Path src/main/resources/application.properties -TotalCount 5
 
-      - task: Docker@2
+      - task: Maven@3
         inputs:
-          containerRegistry: 'mtc-api-docker-hub'
-          repository: 'ryandf1998/mtc-api-logtag-container'
-          command: 'buildAndPush'
-          Dockerfile: '**/Dockerfile'
-          tags: latest
+          mavenPOMFile: 'pom.xml'
+          testResultsFiles: '**/target/jacoco.exec'
+          codeCoverageToolOption: 'JaCoCo'
+          publishJUnitResults: true
+
+      # - task: Docker@2
+      #   inputs:
+      #     containerRegistry: 'mtc-api-docker-hub'
+      #     repository: 'ryandf1998/mtc-api-logtag-container'
+      #     command: 'buildAndPush'
+      #     Dockerfile: '**/Dockerfile'
+      #     tags: latest
 
   # - stage: test
   #   displayName: Test
   #   jobs:
-  
+
   #   - job: my_custom_container_job
   #     displayName: 'Build and Push Docker Image'
   #     container:
