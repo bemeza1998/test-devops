@@ -32,12 +32,9 @@ jobs:
   - task: Docker@2
     displayName: 'Run unit tests'
     inputs:
-      command: run
-      containerName: 'ryandf1998/mtc-api-logtag-container'
-      imageName: ryandf1998/mtc-api-logtag-container:latest
-      workingDirectory: /app
-      tty: true
-      command: mvn test
+      containerRegistry: 'mtc-api-docker-hub'
+      command: 'start'
+      container: 'ryandf1998/mtc-api-logtag-container'
 
 # - job: Deploy
 #   displayName: 'Deploy to Azure App Service'
