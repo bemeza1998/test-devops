@@ -35,9 +35,11 @@ stages:
           mavenPOMFile: 'pom.xml'
           testResultsFiles: '**/target/jacoco.exec'
           codeCoverageToolOption: 'JaCoCo'
-          publishJUnitResults: true
-          mavenVersionOption: '3.8.5'
+          mavenOptions: '-Xmx3072m'
+          jdkArchitectureOption: 'x64'
           jdkVersionOption: '21.0.4'
+          mavenAuthenticateFeed: true
+          goals: 'package'
 
       # - task: Docker@2
       #   inputs:
