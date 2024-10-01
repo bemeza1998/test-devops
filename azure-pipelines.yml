@@ -34,7 +34,10 @@ stages:
         inputs:
           targetType: inline
           script: |
-            docker build -t latest -f './docker-test/Dockerfile' .
+            docker build -t devops-unit-test -f './docker-test/Dockerfile' .
+            docker run -d --name devops-unit-test-cont devops-unit-test-img
+            docker cp devops-unit-test-cont:/app/target/jacoco.exec .
+            ls
 
       # - task: Docker@2
       #   inputs:
