@@ -37,7 +37,14 @@ stages:
             docker build -t devops-unit-test-img -f './docker-test/Dockerfile' .
             docker run -d --name devops-unit-test-cont devops-unit-test-img
             docker cp devops-unit-test-cont:/app/target/jacoco.exec .
+            docker rm -f devops-unit-test-cont
             ls
+      
+      - task: PublishTestResults@2
+        inputs:  
+          testResultsFormat: 'JUnit'
+          testResultsFiles: 'jacoco.exec'
+
 
       # - task: Docker@2
       #   inputs:
