@@ -38,17 +38,17 @@ stages:
           Dockerfile: '**/Dockerfile'
           tags: latest
 
-  - stage: test
-    displayName: Test
-    jobs:
+  # - stage: test
+  #   displayName: Test
+  #   jobs:
   
-    - job: my_custom_container_job
-      displayName: 'Build and Push Docker Image'
-      container:
-          image: ryandf1998/mtc-api-logtag-container:latest
-      steps:
-          - checkout: self
-          - script: |
-              echo "Hello from custom container"
-              df
+  #   - job: my_custom_container_job
+  #     displayName: 'Build and Push Docker Image'
+  #     container:
+  #         image: ryandf1998/mtc-api-logtag-container:latest
+  #     steps:
+  #         - checkout: self
+  #         - script: |
+  #             echo "Hello from custom container"
+  #             df
 
