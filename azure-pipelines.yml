@@ -37,7 +37,7 @@ stages:
           codeCoverageToolOption: 'JaCoCo'
           publishJUnitResults: true
           mavenVersionOption: '3.8.5'
-          jdkVersionOption: '1.17'
+          jdkVersionOption: '21.0.4'
 
       # - task: Docker@2
       #   inputs:
