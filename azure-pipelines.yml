@@ -42,23 +42,23 @@ stages:
             ls -lrt target/site/jacoco/jacoco.xml
 
       
-      # - task: PublishTestResults@2
-      #   inputs:  
-      #     testResultsFormat: 'JUnit'
-      #     testResultsFiles: 'surefire-reports/*.xml'
+      - task: PublishTestResults@2
+        inputs:  
+          testResultsFormat: 'JUnit'
+          testResultsFiles: 'target/surefire-reports/*.xml'
 
-      # - task: PublishCodeCoverageResults@2
-      #   inputs:
-      #     summaryFileLocation: 'jacoco/jacoco.xml'
+      - task: PublishCodeCoverageResults@2
+        inputs:
+          summaryFileLocation: 'target/site/jacoco/jacoco.xml'
 
 
-      # - task: Docker@2
-      #   inputs:
-      #     containerRegistry: 'mtc-api-docker-hub'
-      #     repository: 'ryandf1998/mtc-api-logtag-container'
-      #     command: 'buildAndPush'
-      #     Dockerfile: '**/Dockerfile'
-      #     tags: latest
+      - task: Docker@2
+        inputs:
+          containerRegistry: 'mtc-api-docker-hub'
+          repository: 'ryandf1998/mtc-api-logtag-container'
+          command: 'buildAndPush'
+          Dockerfile: '**/Dockerfile'
+          tags: latest
 
   # - stage: test
   #   displayName: Test
