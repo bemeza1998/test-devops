@@ -1,58 +1,35 @@
 trigger:
-- feature/bmeza
+  - main
+  - feature/*
 
 pool:
   vmImage: 'ubuntu-latest'
 
 variables:
-  - group: DEVOPS_TEST_DEV
-
-# resources:
-#   containers:
-#   - container: mtc-api-logtag-container
-#     image: ryandf1998/mtc-api-logtag-container:latest
+  - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+    - group: PROD_DEVOPS_TEST
+  - ${{ if startsWith(variables['Build.SourceBranch'], 'refs/heads/feature/') }}:
+    - group: DEV_DEVOPS_TEST
 
 stages:
   - stage: Build
-    displayName: Build stage
+    displayName: Build application
     jobs:
 
-    - job: Build
-      displayName: 'Build and Push Docker Image'
+    - job: 'Set properties and build Docker image'
       steps:
 
       - task: AzurePowerShell@5
+        displayName: 'Replace property values'
         inputs:
           azureSubscription: DEVOPS_TEST_SERVICE_CONNECTION
           ScriptType: InlineScript
           azurePowerShellVersion: Latest
           Inline: |
-            Set-Content -Path "src/main/resources/application.properties" -Value (Get-Content -Path "src/main/resources/application.properties" | ForEach-Object { $_ -replace '\$\{DEVOPS_TEST_DEV_URI_DEV\}', '$(DEVOPS_TEST_DEV_URI_DEV)' -replace '\$\{DEVOPS_TEST_DEV_JWT_DEV\}', '$(DEVOPS_TEST_DEV_JWT_DEV)' })
-            Get-Content -Path src/main/resources/application.properties -TotalCount 5
-
-      - task: Bash@3
-        inputs:
-          targetType: inline
-          script: |
-            docker build -t devops-unit-test-img -f './docker-test/Dockerfile' .
-            docker run -d --name devops-unit-test-cont devops-unit-test-img
-            docker cp devops-unit-test-cont:/app/target/ target/
-            docker rm -f devops-unit-test-cont
-            ls -lrt target/surefire-reports/*.xml
-            ls -lrt target/site/jacoco/jacoco.xml
-
-      
-      - task: PublishTestResults@2
-        inputs:  
-          testResultsFormat: 'JUnit'
-          testResultsFiles: 'target/surefire-reports/*.xml'
-
-      - task: PublishCodeCoverageResults@2
-        inputs:
-          summaryFileLocation: 'target/site/jacoco/jacoco.xml'
-
+            Set-Content -Path "src/main/resources/application.properties" -Value (Get-Content -Path "src/main/resources/application.properties" | ForEach-Object { $_ -replace '\$\{DEVOPS_TEST_JWT\}', '$(DEVOPS_TEST_JWT)' -replace '\$\{DEVOPS_TEST_URI\}', '$(DEVOPS_TEST_URI)' -replace '\$\{DEVOPS_TEST_DB\}', '$(DEVOPS_TEST_DB)' -replace '\$\{DEVOPS_TEST_JWT_EXP\}', '$(DEVOPS_TEST_JWT_EXP)' -replace '\$\{DEVOPS_TEST_API_KEY\}', '$(DEVOPS_TEST_API_KEY)' -replace '\$\{DEVOPS_TEST_PASS\}', '$(DEVOPS_TEST_PASS)' })
 
       - task: Docker@2
+        displayName: 'Build and Push Docker Image'
         inputs:
           containerRegistry: 'mtc-api-docker-hub'
           repository: 'ryandf1998/mtc-api-logtag-container'
@@ -60,17 +37,42 @@ stages:
           Dockerfile: '**/Dockerfile'
           tags: latest
 
-  # - stage: test
-  #   displayName: Test
-  #   jobs:
+  - stage: Test
+    displayName: Test application
+    jobs:
 
-  #   - job: my_custom_container_job
-  #     displayName: 'Build and Push Docker Image'
-  #     container:
-  #         image: ryandf1998/mtc-api-logtag-container:latest
-  #     steps:
-  #         - checkout: self
-  #         - script: |
-  #             echo "Hello from custom container"
-  #             df
+    - job: 'PublishTestResult'
+      steps:
+      - task: Bash@3
+        displayName: 'Build docker image for test'
+        inputs:
+          targetType: inline
+          script: |
+            docker build -t devops-unit-test-img -f './docker-test/Dockerfile' .
+            docker run -d --name devops-unit-test-cont devops-unit-test-img
+            docker cp devops-unit-test-cont:/app/target/ target/
+            docker rm -f devops-unit-test-cont
 
+      - task: PublishTestResults@2
+        displayName: 'Publish Test Results'
+        inputs:  
+          testResultsFormat: 'JUnit'
+          testResultsFiles: 'target/surefire-reports/*.xml'
+
+      - task: PublishCodeCoverageResults@2
+        displayName: 'Publish Code Coverage Results'
+        inputs:
+          summaryFileLocation: 'target/site/jacoco/jacoco.xml'
+
+  - stage: Deploy
+    displayName: 'Deploy application to Azure'
+    jobs:
+    - job: Deploy
+      displayName: 'Deploy to Azure App Service'
+      dependsOn: Build
+      steps:
+        - task: AzureWebAppContainer@1
+          inputs:
+            azureSubscription: DEVOPS_TEST_SERVICE_CONNECTION
+            appName: $(ENV)$(PROYECT_NAME)appserv
+            containers: ryandf1998/mtc-api-logtag-container:latest
