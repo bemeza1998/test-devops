@@ -39,7 +39,11 @@ stages:
             docker cp devops-unit-test-cont:/app/target/ surefire-reports/
             docker cp devops-unit-test-cont:/app/target/site/jacoco/jacoco.xml jacoco/
             docker rm -f devops-unit-test-cont
-            ls -lrt surefire-reports/
+            ls -lrt surefire-reports/surefire-reports
+            ls -lrt surefire-reports/site
+
+            ls -lrt jacoco/
+
       
       # - task: PublishTestResults@2
       #   inputs:  
