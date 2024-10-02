@@ -69,7 +69,6 @@ stages:
     jobs:
     - job: Deploy
       displayName: 'Deploy to Azure App Service'
-      dependsOn: Build
       steps:
         - task: AzureWebAppContainer@1
           inputs:
