@@ -36,14 +36,19 @@ stages:
           script: |
             docker build -t devops-unit-test-img -f './docker-test/Dockerfile' .
             docker run -d --name devops-unit-test-cont devops-unit-test-img
-            docker cp devops-unit-test-cont:/app/target/jacoco.exec .
+            docker cp devops-unit-test-cont:/app/target/surefire-reports/*.xml surefire-reports/
+            docker cp devops-unit-test-cont:/app/target/site/jacoco/jacoco.xml jacoco/
             docker rm -f devops-unit-test-cont
             ls
       
       - task: PublishTestResults@2
         inputs:  
           testResultsFormat: 'JUnit'
-          testResultsFiles: 'jacoco.exec'
+          testResultsFiles: 'surefire-reports/*.xml'
+
+      - task: PublishCodeCoverageResults@2
+        inputs:
+          summaryFileLocation: 'jacoco/jacoco.xml'
 
 
       # - task: Docker@2
