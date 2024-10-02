@@ -1,19 +1,87 @@
-# Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
-
 trigger:
-- main
+  - main
+  - feature/*
 
 pool:
-  vmImage: ubuntu-latest
+  vmImage: 'ubuntu-latest'
 
-steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
+variables:
+  - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+    - group: PROD_DEVOPS_TEST
+  - ${{ if startsWith(variables['Build.SourceBranch'], 'refs/heads/feature/') }}:
+    - group: DEV_DEVOPS_TEST
 
-- script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
+stages:
+  - stage: Build
+    displayName: Build application
+    jobs:
+
+    - job: 'SetPropertiesAnBuildDockerImage'
+      steps:
+
+      - task: AzurePowerShell@5
+        displayName: 'Replace property values'
+        inputs:
+          azureSubscription: DEVOPS_TEST_SERVICE_CONNECTION
+          ScriptType: InlineScript
+          azurePowerShellVersion: Latest
+          Inline: |
+            Set-Content -Path "src/main/resources/application.properties" -Value (Get-Content -Path "src/main/resources/application.properties" | ForEach-Object { $_ -replace '\$\{DEVOPS_TEST_JWT\}', '$(DEVOPS_TEST_JWT)' -replace '\$\{DEVOPS_TEST_URI\}', '$(DEVOPS_TEST_URI)' -replace '\$\{DEVOPS_TEST_DB\}', '$(DEVOPS_TEST_DB)' -replace '\$\{DEVOPS_TEST_JWT_EXP\}', '$(DEVOPS_TEST_JWT_EXP)' -replace '\$\{DEVOPS_TEST_API_KEY\}', '$(DEVOPS_TEST_API_KEY)' -replace '\$\{DEVOPS_TEST_PASS\}', '$(DEVOPS_TEST_PASS)' })
+
+      - task: Docker@2
+        displayName: 'Build and Push Docker Image'
+        inputs:
+          containerRegistry: 'devops-test-docker-hub'
+          repository: 'ryandf1998/devops-test-container'
+          command: 'buildAndPush'
+          Dockerfile: '**/Dockerfile'
+          tags: latest
+
+  - stage: Test
+    displayName: Test application
+    jobs:
+
+    - job: 'PublishTestResult'
+      steps:
+
+      - task: AzurePowerShell@5
+        displayName: 'Replace property values'
+        inputs:
+          azureSubscription: DEVOPS_TEST_SERVICE_CONNECTION
+          ScriptType: InlineScript
+          azurePowerShellVersion: Latest
+          Inline: |
+            Set-Content -Path "src/main/resources/application.properties" -Value (Get-Content -Path "src/main/resources/application.properties" | ForEach-Object { $_ -replace '\$\{DEVOPS_TEST_JWT\}', '$(DEVOPS_TEST_JWT)' -replace '\$\{DEVOPS_TEST_URI\}', '$(DEVOPS_TEST_URI)' -replace '\$\{DEVOPS_TEST_DB\}', '$(DEVOPS_TEST_DB)' -replace '\$\{DEVOPS_TEST_JWT_EXP\}', '$(DEVOPS_TEST_JWT_EXP)' -replace '\$\{DEVOPS_TEST_API_KEY\}', '$(DEVOPS_TEST_API_KEY)' -replace '\$\{DEVOPS_TEST_PASS\}', '$(DEVOPS_TEST_PASS)' })
+
+      - task: Bash@3
+        displayName: 'Build docker image for test'
+        inputs:
+          targetType: inline
+          script: |
+            docker build -t devops-unit-test-img -f './docker-test/Dockerfile' .
+            docker run -d --name devops-unit-test-cont devops-unit-test-img
+            docker cp devops-unit-test-cont:/app/target/ target/
+            docker rm -f devops-unit-test-cont
+
+      - task: PublishTestResults@2
+        displayName: 'Publish Test Results'
+        inputs:  
+          testResultsFormat: 'JUnit'
+          testResultsFiles: 'target/surefire-reports/*.xml'
+
+      - task: PublishCodeCoverageResults@2
+        displayName: 'Publish Code Coverage Results'
+        inputs:
+          summaryFileLocation: 'target/site/jacoco/jacoco.xml'
+
+  - stage: Deploy
+    displayName: 'Deploy application to Azure'
+    jobs:
+    - job: Deploy
+      displayName: 'Deploy to Azure App Service'
+      steps:
+        - task: AzureWebAppContainer@1
+          inputs:
+            azureSubscription: DEVOPS_TEST_SERVICE_CONNECTION
+            appName: $(ENV)$(PROYECT_NAME)appserv
+            containers: ryandf1998/devops-test-container:latest
