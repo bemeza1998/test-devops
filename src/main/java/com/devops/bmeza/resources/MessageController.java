@@ -25,7 +25,7 @@ public class MessageController {
     }
 
     @RequestMapping(method = {RequestMethod.GET, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.PATCH})
-    public ResponseEntity<String> manejarMetodosNoPermitidos() {
+    public ResponseEntity<String> methodsNotPermitted() {
         return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)
                              .body("ERROR");
     }
