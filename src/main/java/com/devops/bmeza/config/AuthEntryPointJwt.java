@@ -7,9 +7,8 @@ import java.util.Map;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.Generated;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.AuthenticationException;
@@ -21,9 +20,8 @@ import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Component
+@Generated
 public class AuthEntryPointJwt implements AuthenticationEntryPoint {
-
-    private static final Logger logger = LoggerFactory.getLogger(AuthEntryPointJwt.class);
     
     @Value("${app.api.key}")
     private  String API_KEY_HEADER;
@@ -35,8 +33,6 @@ public class AuthEntryPointJwt implements AuthenticationEntryPoint {
     public void commence(HttpServletRequest request, HttpServletResponse response,
             AuthenticationException authException)
             throws IOException, ServletException {
-
-        logger.error("Unauthorized error: {}", authException.getMessage());
 
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         String apiKey = request.getHeader(API_KEY_HEADER);
