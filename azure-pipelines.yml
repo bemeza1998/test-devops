@@ -80,10 +80,17 @@ stages:
       #     testResultsFormat: 'JUnit'
       #     testResultsFiles: 'target/surefire-reports/*.xml'
 
-      # - task: PublishCodeCoverageResults@2
-      #   displayName: 'Publish Code Coverage Results'
-      #   inputs:
-      #     summaryFileLocation: 'target/site/jacoco/jacoco.xml'
+      - task: Bash@3
+        inputs:
+          targetType: 'inline'
+          script: |
+            ls -lrtR target/
+          
+
+      - task: PublishCodeCoverageResults@2
+        displayName: 'Publish Code Coverage Results'
+        inputs:
+          summaryFileLocation: 'target/site/jacoco/jacoco.xml'
 
   # - stage: Deploy
   #   displayName: 'Deploy application to Azure'
