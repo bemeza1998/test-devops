@@ -39,19 +39,20 @@ stages:
 
   - stage: Test
     displayName: Test application
+    dependsOn: 'Build'
     jobs:
 
     - job: 'PublishTestResult'
       steps:
 
-      - task: AzurePowerShell@5
-        displayName: 'Replace property values'
-        inputs:
-          azureSubscription: DEVOPS_TEST_SERVICE_CONNECTION
-          ScriptType: InlineScript
-          azurePowerShellVersion: Latest
-          Inline: |
-            Set-Content -Path "src/main/resources/application.properties" -Value (Get-Content -Path "src/main/resources/application.properties" | ForEach-Object { $_ -replace '\$\{DEVOPS_TEST_JWT\}', '$(DEVOPS_TEST_JWT)' -replace '\$\{DEVOPS_TEST_URI\}', '$(DEVOPS_TEST_URI)' -replace '\$\{DEVOPS_TEST_DB\}', '$(DEVOPS_TEST_DB)' -replace '\$\{DEVOPS_TEST_JWT_EXP\}', '$(DEVOPS_TEST_JWT_EXP)' -replace '\$\{DEVOPS_TEST_API_KEY\}', '$(DEVOPS_TEST_API_KEY)' -replace '\$\{DEVOPS_TEST_PASS\}', '$(DEVOPS_TEST_PASS)' })
+      # - task: AzurePowerShell@5
+      #   displayName: 'Replace property values'
+      #   inputs:
+      #     azureSubscription: DEVOPS_TEST_SERVICE_CONNECTION
+      #     ScriptType: InlineScript
+      #     azurePowerShellVersion: Latest
+      #     Inline: |
+      #       Set-Content -Path "src/main/resources/application.properties" -Value (Get-Content -Path "src/main/resources/application.properties" | ForEach-Object { $_ -replace '\$\{DEVOPS_TEST_JWT\}', '$(DEVOPS_TEST_JWT)' -replace '\$\{DEVOPS_TEST_URI\}', '$(DEVOPS_TEST_URI)' -replace '\$\{DEVOPS_TEST_DB\}', '$(DEVOPS_TEST_DB)' -replace '\$\{DEVOPS_TEST_JWT_EXP\}', '$(DEVOPS_TEST_JWT_EXP)' -replace '\$\{DEVOPS_TEST_API_KEY\}', '$(DEVOPS_TEST_API_KEY)' -replace '\$\{DEVOPS_TEST_PASS\}', '$(DEVOPS_TEST_PASS)' })
 
       - task: Maven@4
         inputs:
@@ -61,7 +62,7 @@ stages:
           jdkVersionOption: '1.21'
           jdkArchitectureOption: 'x64'
           publishJUnitResults: true
-          testResultsFiles: '**/TEST-*.xml'
+          testResultsFiles: 'target/surefire-reports/*.xml'
           goals: 'package'
 
       # - task: Bash@3
