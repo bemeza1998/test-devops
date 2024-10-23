@@ -28,14 +28,14 @@ stages:
           Inline: |
             Set-Content -Path "src/main/resources/application.properties" -Value (Get-Content -Path "src/main/resources/application.properties" | ForEach-Object { $_ -replace '\$\{DEVOPS_TEST_JWT\}', '$(DEVOPS_TEST_JWT)' -replace '\$\{DEVOPS_TEST_URI\}', '$(DEVOPS_TEST_URI)' -replace '\$\{DEVOPS_TEST_DB\}', '$(DEVOPS_TEST_DB)' -replace '\$\{DEVOPS_TEST_JWT_EXP\}', '$(DEVOPS_TEST_JWT_EXP)' -replace '\$\{DEVOPS_TEST_API_KEY\}', '$(DEVOPS_TEST_API_KEY)' -replace '\$\{DEVOPS_TEST_PASS\}', '$(DEVOPS_TEST_PASS)' })
 
-      - task: Docker@2
-        displayName: 'Build and Push Docker Image'
-        inputs:
-          containerRegistry: 'devops-test-docker-hub'
-          repository: 'ryandf1998/devops-test-container'
-          command: 'buildAndPush'
-          Dockerfile: '**/Dockerfile'
-          tags: latest
+      # - task: Docker@2
+      #   displayName: 'Build and Push Docker Image'
+      #   inputs:
+      #     containerRegistry: 'devops-test-docker-hub'
+      #     repository: 'ryandf1998/devops-test-container'
+      #     command: 'buildAndPush'
+      #     Dockerfile: '**/Dockerfile'
+      #     tags: latest
 
   - stage: Test
     displayName: Test application
@@ -74,16 +74,16 @@ stages:
       #       docker cp devops-unit-test-cont:/app/target/ target/
       #       docker rm -f devops-unit-test-cont
 
-      - task: PublishTestResults@2
-        displayName: 'Publish Test Results'
-        inputs:  
-          testResultsFormat: 'JUnit'
-          testResultsFiles: 'target/surefire-reports/*.xml'
+      # - task: PublishTestResults@2
+      #   displayName: 'Publish Test Results'
+      #   inputs:  
+      #     testResultsFormat: 'JUnit'
+      #     testResultsFiles: 'target/surefire-reports/*.xml'
 
-      - task: PublishCodeCoverageResults@2
-        displayName: 'Publish Code Coverage Results'
-        inputs:
-          summaryFileLocation: 'target/site/jacoco/jacoco.xml'
+      # - task: PublishCodeCoverageResults@2
+      #   displayName: 'Publish Code Coverage Results'
+      #   inputs:
+      #     summaryFileLocation: 'target/site/jacoco/jacoco.xml'
 
   # - stage: Deploy
   #   displayName: 'Deploy application to Azure'
