@@ -34,6 +34,7 @@ stages:
           script: |
             VARIABLE=HOLAAAAAAA
             export VARIABLE
+            echo $VARIABLE
       
       # - task: Docker@2
       #   displayName: 'Build and Push Docker Image'
