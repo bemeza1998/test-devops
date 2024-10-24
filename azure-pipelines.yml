@@ -67,6 +67,7 @@ stages:
           targetType: 'inline'
           script: |
             echo $VARIABLE
+            echo "hola"
 
 
       - task: Maven@4
