@@ -28,6 +28,13 @@ stages:
           Inline: |
             Set-Content -Path "src/main/resources/application.properties" -Value (Get-Content -Path "src/main/resources/application.properties" | ForEach-Object { $_ -replace '\$\{DEVOPS_TEST_JWT\}', '$(DEVOPS_TEST_JWT)' -replace '\$\{DEVOPS_TEST_URI\}', '$(DEVOPS_TEST_URI)' -replace '\$\{DEVOPS_TEST_DB\}', '$(DEVOPS_TEST_DB)' -replace '\$\{DEVOPS_TEST_JWT_EXP\}', '$(DEVOPS_TEST_JWT_EXP)' -replace '\$\{DEVOPS_TEST_API_KEY\}', '$(DEVOPS_TEST_API_KEY)' -replace '\$\{DEVOPS_TEST_PASS\}', '$(DEVOPS_TEST_PASS)' })
 
+      - task: Bash@3
+        inputs:
+          targetType: 'inline'
+          script: |
+            VARIABLE=HOLAAAAAAA
+            export VARIABLE
+      
       # - task: Docker@2
       #   displayName: 'Build and Push Docker Image'
       #   inputs:
@@ -54,6 +61,13 @@ stages:
       #     Inline: |
       #       Set-Content -Path "src/main/resources/application.properties" -Value (Get-Content -Path "src/main/resources/application.properties" | ForEach-Object { $_ -replace '\$\{DEVOPS_TEST_JWT\}', '$(DEVOPS_TEST_JWT)' -replace '\$\{DEVOPS_TEST_URI\}', '$(DEVOPS_TEST_URI)' -replace '\$\{DEVOPS_TEST_DB\}', '$(DEVOPS_TEST_DB)' -replace '\$\{DEVOPS_TEST_JWT_EXP\}', '$(DEVOPS_TEST_JWT_EXP)' -replace '\$\{DEVOPS_TEST_API_KEY\}', '$(DEVOPS_TEST_API_KEY)' -replace '\$\{DEVOPS_TEST_PASS\}', '$(DEVOPS_TEST_PASS)' })
 
+      - task: Bash@3
+        inputs:
+          targetType: 'inline'
+          script: |
+            echo $VARIABLE
+
+
       - task: Maven@4
         inputs:
           mavenPomFile: 'pom.xml'
@@ -64,22 +78,6 @@ stages:
           publishJUnitResults: true
           testResultsFiles: 'target/surefire-reports/*.xml'
           goals: 'package'
-
-      # - task: Bash@3
-      #   displayName: 'Build docker image for test'
-      #   inputs:
-      #     targetType: inline
-      #     script: |
-      #       docker build -t devops-unit-test-img -f './docker-test/Dockerfile' .
-      #       docker run -d --name devops-unit-test-cont devops-unit-test-img
-      #       docker cp devops-unit-test-cont:/app/target/ target/
-      #       docker rm -f devops-unit-test-cont
-
-      # - task: PublishTestResults@2
-      #   displayName: 'Publish Test Results'
-      #   inputs:  
-      #     testResultsFormat: 'JUnit'
-      #     testResultsFiles: 'target/surefire-reports/*.xml'
 
       - task: Bash@3
         inputs:
